@@ -87,7 +87,6 @@ async function enviarPedidos(e) {
         return;
     }
     
-    // Coleta produtos marcados
     const pedidos = [];
     const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
     
@@ -110,65 +109,52 @@ async function enviarPedidos(e) {
         return;
     }
     
-    console.log('📤 Enviando pedidos:', pedidos);
-    
     const btnSubmit = document.querySelector('.btn-submit');
     btnSubmit.disabled = true;
     btnSubmit.textContent = '⏳ Enviando...';
     
     try {
-        // Envia cada pedido
         for (const pedido of pedidos) {
             await fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(pedido)
             });
-            
-            // Pequeno delay entre requisições
             await new Promise(resolve => setTimeout(resolve, 300));
         }
-        mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
 
-        // 1. Preenche os dados no cupom
+        mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
+        
+        // --- INÍCIO DA PARTE DO CUPOM ---
         montarCupomPDF(produtor, data, pedidos);
-        
         const elemento = document.getElementById('pdf-cupom');
-        
-        // 2. DUPLICA O CONTEÚDO (Cria as duas vias: uma sua e uma do produtor)
         const viaOriginal = elemento.innerHTML;
-        elemento.innerHTML = `
-            <div style="padding: 10px;">${viaOriginal}</div>
-            <div style="border-top: 2px dashed #000; margin: 30px 0; padding-top: 10px;"></div>
-            <div style="padding: 10px;">${viaOriginal}</div>
-        `;
+
+        // Duplica para ter duas vias na mesma folha
+        elemento.innerHTML = viaOriginal + 
+            '<div style="border-top: 2px dashed #000; margin: 40px 0; padding-top: 40px;"></div>' + 
+            viaOriginal;
 
         const nomeArquivo = `Pedido_CLAF_${produtor.replace(/\s+/g, '_')}_${data}.pdf`;
 
         const opcoesPDF = {
-            margin: 5,
+            margin: 10,
             filename: nomeArquivo,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // 3. AGUARDA O TEXTO APARECER (Isso impede que saia vazio)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // 4. Salva o arquivo no celular/computador
-        await html2pdf().set(opcoesPDF).from(elemento).save();
-
-        // 5. Abre a janela de impressão uma única vez (com as duas vias)
-        window.print();
-
-        // 6. Limpa e reinicia para o próximo pedido
+        // Espera 1 segundo para garantir que o texto foi renderizado e não saia vazio
         setTimeout(() => {
-            location.reload();
-        }, 1500);
+            html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
+                window.print();
+                elemento.innerHTML = viaOriginal; // Restaura para uma via
+                setTimeout(() => { location.reload(); }, 1000); // Recarrega a página com segurança
+            });
+        }, 1000);
+        // --- FIM DA PARTE DO CUPOM ---
 
     } catch (erro) {
         console.error('❌ Erro:', erro);
@@ -178,161 +164,7 @@ async function enviarPedidos(e) {
         btnSubmit.textContent = '📦 Registrar Pedidos';
     }
 }
-function salvarEImprimirRecibo(produtor, data, pedidos) {
-    // Cria uma nova janela para impressão
-    const janela = window.open('', '_blank', 'width=400,height=600');
 
-    if (!janela) {
-        alert('⚠️ Pop-up bloqueado. Permita pop-ups para imprimir o recibo.');
-        return;
-    }
-
-    // Monta o conteúdo do recibo (estilo cupom)
-    let conteudo = `
-        <html>
-        <head>
-            <title>Recibo CLAF</title>
-            <style>
-                body {
-                    font-family: monospace;
-                    font-size: 12px;
-                    padding: 10px;
-                }
-                h2, h3 {
-                    text-align: center;
-                    margin: 4px 0;
-                }
-                .linha {
-                    border-top: 1px dashed #000;
-                    margin: 8px 0;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                td {
-                    padding: 2px 0;
-                }
-                .qtd {
-                    text-align: right;
-                }
-                .rodape {
-                    text-align: center;
-                    margin-top: 10px;
-                }
-            </style>
-        </head>
-        <body>
-            <h2>COOPERATIVA CLAF</h2>
-            <h3>RECIBO DE ENTREGA</h3>
-
-            <div class="linha"></div>
-
-            <p><strong>Produtor:</strong> ${produtor}</p>
-            <p><strong>Data:</strong> ${data}</p>
-
-            <div class="linha"></div>
-
-            <table>
-    `;
-
-    pedidos.forEach(p => {
-        conteudo += `
-            <tr>
-                <td>${p.produto}</td>
-                <td class="qtd">${p.quantidade}</td>
-            </tr>
-        `;
-    });
-
-    const agora = new Date().toLocaleString('pt-BR');
-
-    conteudo += `
-            </table>
-
-            <div class="linha"></div>
-
-            <p class="rodape">Emitido em: ${agora}</p>
-            <p class="rodape">Cooperativa CLAF agradece!</p>
-
-            
-        </body>
-        </html>
-    `;
-
-    janela.document.open();
-    janela.document.write(conteudo);
-    janela.document.close();
-}
-function gerarReciboNaTela(produtor, data, pedidos) {
-    const recibo = document.getElementById('recibo');
-
-    let html = `
-        <h2>COOPERATIVA CLAF</h2>
-        <h3>RECIBO DE ENTREGA</h3>
-
-        <div class="linha"></div>
-
-        <p><strong>Produtor:</strong> ${produtor}</p>
-        <p><strong>Data:</strong> ${data}</p>
-
-        <div class="linha"></div>
-
-        <table>
-    `;
-
-    pedidos.forEach(p => {
-        html += `
-            <tr>
-                <td>${p.produto}</td>
-                <td class="qtd">${p.quantidade}</td>
-            </tr>
-        `;
-    });
-
-    const agora = new Date().toLocaleString('pt-BR');
-
-    html += `
-        </table>
-
-        <div class="linha"></div>
-
-        <p>Emitido em: ${agora}</p>
-        <p style="text-align:center;">Cooperativa CLAF agradece!</p>
-    `;
-
-    recibo.innerHTML = html;
-    recibo.style.display = 'block';
-
-    window.print();
-
-    window.onafterprint = () => {
-        recibo.style.display = 'none';
-        recibo.innerHTML = '';
-    };
-}
-function gerarRecibo(produtor, data, pedidos) {
-    document.getElementById('reciboProdutor').innerText = produtor;
-    document.getElementById('reciboData').innerText = data;
-
-    const itensDiv = document.getElementById('reciboItens');
-    itensDiv.innerHTML = '';
-
-    pedidos.forEach(p => {
-        const linha = document.createElement('p');
-        linha.innerHTML = `${p.produto} — <strong>${p.quantidade}</strong>`;
-        itensDiv.appendChild(linha);
-    });
-}
-window.onafterprint = function () {
-    // Fecha a visualização de impressão (se for aba nova)
-    if (window.opener) {
-        window.close();
-    } else {
-        // Caso esteja na mesma aba, reinicia o formulário
-        location.reload();
-    }
-};
 function montarCupomPDF(produtor, data, pedidos) {
     document.getElementById('pdfProdutor').innerText = produtor;
     document.getElementById('pdfData').innerText = data;
@@ -351,7 +183,8 @@ function montarCupomPDF(produtor, data, pedidos) {
         itensDiv.appendChild(linha);
     });
 }
-// Após salvar o PDF, permite imprimir manualmente e reiniciar
+
+// Tecla de atalho para limpar caso necessário
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
         location.reload();
