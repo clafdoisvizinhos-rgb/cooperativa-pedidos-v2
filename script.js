@@ -300,3 +300,12 @@ function gerarRecibo(produtor, data, pedidos) {
         itensDiv.appendChild(linha);
     });
 }
+window.onafterprint = function () {
+    // Fecha a visualização de impressão (se for aba nova)
+    if (window.opener) {
+        window.close();
+    } else {
+        // Caso esteja na mesma aba, reinicia o formulário
+        location.reload();
+    }
+};
