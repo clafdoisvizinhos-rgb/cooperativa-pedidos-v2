@@ -114,6 +114,7 @@ async function enviarPedidos(e) {
     btnSubmit.textContent = '⏳ Enviando...';
     
     try {
+        // Envio para a planilha
         for (const pedido of pedidos) {
             await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -126,12 +127,12 @@ async function enviarPedidos(e) {
 
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
         
-        // --- INÍCIO DA PARTE DO CUPOM ---
+        // --- PROCESSO DO CUPOM (CORRIGIDO) ---
         montarCupomPDF(produtor, data, pedidos);
         const elemento = document.getElementById('pdf-cupom');
         const viaOriginal = elemento.innerHTML;
 
-        // Duplica para ter duas vias na mesma folha
+        // Criação das duas vias
         elemento.innerHTML = viaOriginal + 
             '<div style="border-top: 2px dashed #000; margin: 40px 0; padding-top: 40px;"></div>' + 
             viaOriginal;
@@ -146,15 +147,14 @@ async function enviarPedidos(e) {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // Espera 1 segundo para garantir que o texto foi renderizado e não saia vazio
+        // Delay crucial para evitar cupom vazio
         setTimeout(() => {
             html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
                 window.print();
-                elemento.innerHTML = viaOriginal; // Restaura para uma via
-                setTimeout(() => { location.reload(); }, 1000); // Recarrega a página com segurança
+                // Limpeza após impressão
+                setTimeout(() => { location.reload(); }, 1500);
             });
         }, 1000);
-        // --- FIM DA PARTE DO CUPOM ---
 
     } catch (erro) {
         console.error('❌ Erro:', erro);
@@ -165,28 +165,32 @@ async function enviarPedidos(e) {
     }
 }
 
+// Mantive esta função para que o código não quebre
 function montarCupomPDF(produtor, data, pedidos) {
-    document.getElementById('pdfProdutor').innerText = produtor;
-    document.getElementById('pdfData').innerText = data;
-    document.getElementById('pdfHora').innerText = new Date().toLocaleString('pt-BR');
-
+    const pdfProdutor = document.getElementById('pdfProdutor');
+    const pdfData = document.getElementById('pdfData');
+    const pdfHora = document.getElementById('pdfHora');
     const itensDiv = document.getElementById('pdfItens');
-    itensDiv.innerHTML = '';
 
-    pedidos.forEach(p => {
-        const linha = document.createElement('div');
-        linha.style.display = 'flex';
-        linha.style.justifyContent = 'space-between';
-        linha.style.fontSize = '12px';
-        linha.style.marginBottom = '2px';
-        linha.innerHTML = `<span>${p.produto}</span><span>${p.quantidade}</span>`;
-        itensDiv.appendChild(linha);
-    });
+    if (pdfProdutor) pdfProdutor.innerText = produtor;
+    if (pdfData) pdfData.innerText = data;
+    if (pdfHora) pdfHora.innerText = new Date().toLocaleString('pt-BR');
+
+    if (itensDiv) {
+        itensDiv.innerHTML = '';
+        pedidos.forEach(p => {
+            const linha = document.createElement('div');
+            linha.style.display = 'flex';
+            linha.style.justifyContent = 'space-between';
+            linha.style.fontSize = '12px';
+            linha.style.marginBottom = '2px';
+            linha.innerHTML = `<span>${p.produto}</span><span>${p.quantidade}</span>`;
+            itensDiv.appendChild(linha);
+        });
+    }
 }
 
-// Tecla de atalho para limpar caso necessário
-document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-        location.reload();
-    }
+// Atalho de segurança
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') location.reload();
 });
