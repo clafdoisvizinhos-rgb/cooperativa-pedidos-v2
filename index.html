@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cooperativa - Registro de Pedidos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌾 Cooperativa Familiar</h1>
+            <p>Registro de Entrega de Produtos</p>
+        </header>
+
+        <form id="pedidoForm">
+            <div class="form-group">
+                <label for="nomeProdutor">Nome do Produtor:</label>
+                <input type="text" id="nomeProdutor" required placeholder="Digite o nome do produtor">
+            </div>
+
+            <div class="produtos-container" id="produtosContainer">
+                <p class="loading">Carregando produtos...</p>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                📦 Registrar Pedido
+            </button>
+        </form>
+
+        <div id="mensagem" class="mensagem hidden"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
