@@ -134,7 +134,8 @@ async function enviarPedidos(e) {
         
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
         montarCupomPDF(produtor, data, pedidos);
-       
+        await new Promise(resolve => setTimeout(resolve, 500));
+      
 const elemento = document.getElementById('pdf-cupom');
 
 const nomeArquivo = `Pedido_CLAF_${produtor.replace(/\s+/g, '_')}_${data}.pdf`;
