@@ -1,125 +1,42 @@
-// ID da sua planilha
-const PLANILHA_ID = '1JK-PnzwXH9VaRymxZEWgH7wYfpZLSk5KSXRjloGR9LM';
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cooperativa - Registro de Pedidos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🌾</div>
+        <h1>Cooperativa Familiar</h1>
+        <p class="subtitle">Registro de Entrega de Produtos</p>
 
-/**
- * Retorna lista de produtos (GET)
- */
-function doGet(e) {
-  try {
-    const planilha = SpreadsheetApp.openById(PLANILHA_ID);
-    const abaProdutos = planilha.getSheetByName('PRODUTOS');
-    
-    if (!abaProdutos) {
-      return ContentService.createTextOutput(
-        JSON.stringify({ erro: 'Aba PRODUTOS não encontrada' })
-      ).setMimeType(ContentService.MimeType.JSON);
-    }
-    
-    // Pega produtos da coluna A (a partir da linha 2)
-    const dados = abaProdutos.getRange('A2:A100').getValues();
-    const produtos = dados
-      .map(linha => linha[0])
-      .filter(produto => produto !== '' && produto !== null);
-    
-    return ContentService.createTextOutput(
-      JSON.stringify({ produtos: produtos })
-    ).setMimeType(ContentService.MimeType.JSON);
-    
-  } catch (erro) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ erro: erro.toString() })
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-}
+        <div id="mensagem" class="mensagem oculto"></div>
 
-/**
- * Salva pedido (POST) - SIMPLIFICADO
- */
-function doPost(e) {
-  try {
-    Logger.log('POST recebido');
-    
-    // Parse dos dados
-    let dados;
-    if (e.postData && e.postData.contents) {
-      dados = JSON.parse(e.postData.contents);
-    } else if (e.parameter) {
-      dados = e.parameter;
-    } else {
-      throw new Error('Nenhum dado recebido');
-    }
-    
-    Logger.log('Dados: ' + JSON.stringify(dados));
-    
-    // Validação
-    if (!dados.produtor || !dados.produto || !dados.quantidade) {
-      throw new Error('Dados incompletos');
-    }
-    
-    // Abre planilha
-    const planilha = SpreadsheetApp.openById(PLANILHA_ID);
-    const abaDados = planilha.getSheetByName('DADOS');
-    
-    if (!abaDados) {
-      throw new Error('Aba DADOS não encontrada');
-    }
-    
-    // Timestamp
-    const dataAtual = new Date();
-    const timestamp = Utilities.formatDate(
-      dataAtual, 
-      'GMT-3', 
-      'dd/MM/yyyy HH:mm:ss'
-    );
-    
-    // Linha: Timestamp | Nome | Produto | Quantidade
-    const novaLinha = [
-      timestamp,
-      dados.produtor,
-      dados.produto,
-      parseFloat(dados.quantidade)
-    ];
-    
-    Logger.log('Salvando: ' + JSON.stringify(novaLinha));
-    
-    // Salva
-    abaDados.appendRow(novaLinha);
-    
-    Logger.log('✅ Sucesso!');
-    
-    return ContentService.createTextOutput(
-      JSON.stringify({ 
-        sucesso: true,
-        mensagem: 'Pedido registrado!'
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
-    
-  } catch (erro) {
-    Logger.log('❌ ERRO: ' + erro.toString());
-    
-    return ContentService.createTextOutput(
-      JSON.stringify({ 
-        sucesso: false,
-        erro: erro.toString()
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-}
+        <form id="formPedido">
+            <div class="form-group">
+                <label for="produtor">Nome do Produtor:</label>
+                <input type="text" id="produtor" required placeholder="Digite seu nome">
+            </div>
 
-/**
- * Teste
- */
-function testarSalvamento() {
-  const teste = {
-    postData: {
-      contents: JSON.stringify({
-        produtor: 'João Silva',
-        produto: 'TOMATE',
-        quantidade: '10'
-      })
-    }
-  };
-  
-  const resultado = doPost(teste);
-  Logger.log('Resultado: ' + resultado.getContent());
-}
+            <div class="form-group">
+                <label for="produto">Nome do Produto:</label>
+                <input type="text" id="produto" required placeholder="Digite ou selecione o produto" list="listaProdutos" autocomplete="off">
+                <datalist id="listaProdutos"></datalist>
+            </div>
+
+            <div class="form-group">
+                <label for="quantidade">Quantidade (kg):</label>
+                <input type="number" id="quantidade" required min="0.1" step="0.1" placeholder="Ex: 5">
+            </div>
+
+            <button type="submit" class="btn-submit">
+                📦 Registrar Pedido
+            </button>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
