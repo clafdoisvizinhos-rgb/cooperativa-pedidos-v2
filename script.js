@@ -75,77 +75,74 @@ function mostrarMensagem(texto, tipo) {
     }, 5000);
 }
 
-// Envia todos os pedidos selecionados
+// Envia UM pedido com VÁRIOS produtos
 async function enviarPedidos(e) {
     e.preventDefault();
-    
+
     const produtor = document.getElementById('produtor').value.trim();
     const data = document.getElementById('data').value;
-    
+
     if (!produtor) {
         mostrarMensagem('❌ Digite o nome do produtor', 'erro');
         return;
     }
-    
-    // Coleta produtos marcados
+
     const pedidos = [];
     const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-    
+
     checkboxes.forEach(checkbox => {
         const index = checkbox.id.split('_')[1];
         const qtdInput = document.getElementById(`qtd_${index}`);
         const quantidade = parseFloat(qtdInput.value);
-        
+
         if (quantidade > 0) {
             pedidos.push({
-                produtor: produtor,
                 produto: qtdInput.dataset.produto,
                 quantidade: quantidade
             });
         }
     });
-    
+
     if (pedidos.length === 0) {
         mostrarMensagem('❌ Selecione pelo menos um produto e informe a quantidade', 'erro');
         return;
     }
-    
-    console.log('📤 Enviando pedidos:', pedidos);
-    
+
+    const payload = {
+        produtor: produtor,
+        data: data,
+        pedidos: pedidos
+    };
+
+    console.log('📤 Enviando pedido único:', payload);
+
     const btnSubmit = document.querySelector('.btn-submit');
     btnSubmit.disabled = true;
     btnSubmit.textContent = '⏳ Enviando...';
-    
+
     try {
-        // Envia cada pedido
-        for (const pedido of pedidos) {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(pedido)
-            });
-            
-            // Pequeno delay entre requisições
-            await new Promise(resolve => setTimeout(resolve, 300));
-        }
-        
-        mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
-        
-        // Limpa formulário
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        mostrarMensagem('✅ Pedido registrado com sucesso!', 'sucesso');
+
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
         document.querySelectorAll('input[type="number"]').forEach(input => {
             input.value = '';
             input.disabled = true;
         });
-        
+
     } catch (erro) {
         console.error('❌ Erro:', erro);
-        mostrarMensagem('❌ Erro ao registrar pedidos', 'erro');
+        mostrarMensagem('❌ Erro ao registrar pedido', 'erro');
     } finally {
         btnSubmit.disabled = false;
         btnSubmit.textContent = '📦 Registrar Pedidos';
     }
 }
+
