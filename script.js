@@ -133,7 +133,11 @@ async function enviarPedidos(e) {
         }
         
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
-        gerarReciboNaTela(produtor, data, pedidos);
+        gerarRecibo(produtor, data, pedidos);
+
+setTimeout(() => {
+    window.print();
+}, 300);
 
         // Limpa formulário
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
