@@ -148,7 +148,10 @@ const opcoesPDF = {
 
 requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-        html2pdf().set(opcoesPDF).from(elemento).save();
+        html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
+    window.print();
+});
+
     });
 });
         gerarRecibo(produtor, data, pedidos);
