@@ -1,57 +1,197 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cooperativa - Registro de Pedidos</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">🌾</div>
-            <h1>Cooperativa Familiar</h1>
-            <p class="subtitle">Registro de Entrega de Produtos</p>
-        </div>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        <div class="form-card">
-            <form id="pedido-form">
-                <div class="form-group">
-                    <label for="produtor">Nome do Produtor:</label>
-                    <input type="text" id="produtor" placeholder="Digite o nome do produtor" required>
-                </div>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
 
-                <div class="form-group">
-                    <label for="produto">Nome do Produto:</label>
-                    <input type="text" id="produto" placeholder="Digite o nome do produto" required autocomplete="off">
-                    <div id="produto-list" class="produto-list"></div>
-                </div>
+.container {
+    width: 100%;
+    max-width: 600px;
+}
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="quantidade">Quantidade:</label>
-                        <input type="number" id="quantidade" placeholder="0" step="0.01" required>
-                    </div>
+.header {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
 
-                    <div class="form-group">
-                        <label for="unidade">Unidade:</label>
-                        <select id="unidade" required>
-                            <option value="kg">Kg</option>
-                            <option value="unidade">Unidade</option>
-                            <option value="dúzia">Dúzia</option>
-                            <option value="maço">Maço</option>
-                            <option value="caixa">Caixa</option>
-                        </select>
-                    </div>
-                </div>
+.logo {
+    font-size: 60px;
+    margin-bottom: 10px;
+    animation: bounce 2s infinite;
+}
 
-                <button type="submit" class="btn-submit">
-                    📦 Registrar Pedido
-                </button>
-            </form>
-        </div>
-    </div>
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
 
-    <script src="script.js"></script>
-</body>
-</html>
+.header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.form-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.form-group {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 15px;
+}
+
+.produto-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 1000;
+    margin-top: 5px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.produto-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.produto-item:last-child {
+    border-bottom: none;
+}
+
+.produto-item:hover {
+    background: #f8f9ff;
+    color: #667eea;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+}
+
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.mensagem {
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mensagem.success {
+    background: #d4edda;
+    color: #155724;
+    border: 2px solid #c3e6cb;
+}
+
+.mensagem.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 2px solid #f5c6cb;
+}
+
+@media (max-width: 600px) {
+    .form-card {
+        padding: 25px;
+    }
+    
+    .header h1 {
+        font-size: 28px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
