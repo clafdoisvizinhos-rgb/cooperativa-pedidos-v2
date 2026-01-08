@@ -342,3 +342,9 @@ function montarCupomPDF(produtor, data, pedidos) {
         itensDiv.appendChild(linha);
     });
 }
+// Após salvar o PDF, permite imprimir manualmente e reiniciar
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        location.reload();
+    }
+});
