@@ -1,8 +1,16 @@
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwgMp4mUmzexojmFqMHExfL72ykfxFQuXN-W5rKxRJY6D8vbhUQTahVKSH_3WVZgIkh/exec';
 
-// Carrega produtos no SELECT
+// Define data de hoje como padrão
+document.addEventListener('DOMContentLoaded', () => {
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('data').value = hoje;
+    carregarProdutos();
+    document.getElementById('formPedido').addEventListener('submit', enviarPedidos);
+});
+
+// Carrega produtos e cria lista com checkboxes
 async function carregarProdutos() {
-    const selectProduto = document.getElementById('produto');
+    const listaProdutos = document.getElementById('listaProdutos');
     
     try {
         console.log('🔄 Carregando produtos...');
@@ -10,25 +18,48 @@ async function carregarProdutos() {
         const data = await response.json();
         
         if (data.produtos && data.produtos.length > 0) {
-            // Limpa o select
-            selectProduto.innerHTML = '<option value="">-- Selecione um produto --</option>';
+            listaProdutos.innerHTML = '';
             
-            // Adiciona cada produto como opção
-            data.produtos.forEach(produto => {
-                const option = document.createElement('option');
-                option.value = produto;
-                option.textContent = produto;
-                selectProduto.appendChild(option);
+            data.produtos.forEach((produto, index) => {
+                const div = document.createElement('div');
+                div.className = 'produto-item';
+                div.innerHTML = `
+                    <div class="produto-checkbox">
+                        <input type="checkbox" id="check_${index}" onchange="toggleQuantidade(${index})">
+                        <label for="check_${index}">${produto}</label>
+                    </div>
+                    <input type="number" 
+                           id="qtd_${index}" 
+                           min="0.1" 
+                           step="0.1" 
+                           placeholder="0" 
+                           disabled
+                           data-produto="${produto}">
+                `;
+                listaProdutos.appendChild(div);
             });
             
             console.log('✅ Produtos carregados:', data.produtos.length);
         } else {
-            selectProduto.innerHTML = '<option value="">Nenhum produto encontrado</option>';
-            console.warn('⚠️ Nenhum produto retornado');
+            listaProdutos.innerHTML = '<p class="carregando">Nenhum produto encontrado</p>';
         }
     } catch (erro) {
         console.error('❌ Erro ao carregar produtos:', erro);
-        selectProduto.innerHTML = '<option value="">Erro ao carregar produtos</option>';
+        listaProdutos.innerHTML = '<p class="carregando">Erro ao carregar produtos</p>';
+    }
+}
+
+// Habilita/desabilita campo de quantidade
+function toggleQuantidade(index) {
+    const checkbox = document.getElementById(`check_${index}`);
+    const quantidade = document.getElementById(`qtd_${index}`);
+    
+    quantidade.disabled = !checkbox.checked;
+    
+    if (checkbox.checked) {
+        quantidade.focus();
+    } else {
+        quantidade.value = '';
     }
 }
 
@@ -44,78 +75,77 @@ function mostrarMensagem(texto, tipo) {
     }, 5000);
 }
 
-// Envia pedido
-async function enviarPedido(e) {
+// Envia todos os pedidos selecionados
+async function enviarPedidos(e) {
     e.preventDefault();
     
     const produtor = document.getElementById('produtor').value.trim();
-    const produto = document.getElementById('produto').value;
-    const quantidade = document.getElementById('quantidade').value;
+    const data = document.getElementById('data').value;
     
-    // Validação
     if (!produtor) {
         mostrarMensagem('❌ Digite o nome do produtor', 'erro');
         return;
     }
     
-    if (!produto) {
-        mostrarMensagem('❌ Selecione um produto', 'erro');
+    // Coleta produtos marcados
+    const pedidos = [];
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    
+    checkboxes.forEach(checkbox => {
+        const index = checkbox.id.split('_')[1];
+        const qtdInput = document.getElementById(`qtd_${index}`);
+        const quantidade = parseFloat(qtdInput.value);
+        
+        if (quantidade > 0) {
+            pedidos.push({
+                produtor: produtor,
+                produto: qtdInput.dataset.produto,
+                quantidade: quantidade
+            });
+        }
+    });
+    
+    if (pedidos.length === 0) {
+        mostrarMensagem('❌ Selecione pelo menos um produto e informe a quantidade', 'erro');
         return;
     }
     
-    if (!quantidade || quantidade <= 0) {
-        mostrarMensagem('❌ Digite uma quantidade válida', 'erro');
-        return;
-    }
+    console.log('📤 Enviando pedidos:', pedidos);
     
-    const dados = {
-        produtor: produtor,
-        produto: produto,
-        quantidade: quantidade
-    };
-    
-    console.log('📤 Enviando:', dados);
-    
-    // Desabilita botão durante envio
     const btnSubmit = document.querySelector('.btn-submit');
     btnSubmit.disabled = true;
     btnSubmit.textContent = '⏳ Enviando...';
     
     try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(dados)
+        // Envia cada pedido
+        for (const pedido of pedidos) {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(pedido)
+            });
+            
+            // Pequeno delay entre requisições
+            await new Promise(resolve => setTimeout(resolve, 300));
+        }
+        
+        mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
+        
+        // Limpa formulário
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.value = '';
+            input.disabled = true;
         });
-        
-        // Sucesso
-        mostrarMensagem('✅ Pedido registrado com sucesso!', 'sucesso');
-        
-        // Limpa apenas produto e quantidade (mantém o nome do produtor)
-        document.getElementById('produto').value = '';
-        document.getElementById('quantidade').value = '';
-        
-        // Foca no campo produto para próximo registro
-        document.getElementById('produto').focus();
         
     } catch (erro) {
         console.error('❌ Erro:', erro);
-        mostrarMensagem('❌ Erro ao registrar pedido', 'erro');
+        mostrarMensagem('❌ Erro ao registrar pedidos', 'erro');
     } finally {
-        // Reabilita botão
         btnSubmit.disabled = false;
-        btnSubmit.textContent = '📦 Registrar Pedido';
+        btnSubmit.textContent = '📦 Registrar Pedidos';
     }
 }
-
-// Inicializa quando página carregar
-document.addEventListener('DOMContentLoaded', () => {
-    carregarProdutos();
-    document.getElementById('formPedido').addEventListener('submit', enviarPedido);
-    
-    // Foca no primeiro campo
-    document.getElementById('produtor').focus();
-});
