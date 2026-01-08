@@ -250,8 +250,9 @@ input[type="date"]:focus {
 }
 
 .logo img {
-    max-width: 120px;   /* tamanho controlado */
+    max-width: 170px;
     width: auto;
     height: auto;
     display: block;
 }
+
