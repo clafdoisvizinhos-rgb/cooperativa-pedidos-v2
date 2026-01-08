@@ -133,26 +133,41 @@ async function enviarPedidos(e) {
         }
         await new Promise(resolve => setTimeout(resolve, 500));
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
+       // 1. Preenche os dados no cupom
         montarCupomPDF(produtor, data, pedidos);
-      
-const elemento = document.getElementById('pdf-cupom');
+        
+        const elemento = document.getElementById('pdf-cupom');
+        
+        // 2. DUPLICA O CONTEÚDO (Cria as duas vias)
+        // Guardamos o original, somamos ele mesmo com uma linha divisória
+        const viaOriginal = elemento.innerHTML;
+        elemento.innerHTML = viaOriginal + 
+            '<div style="border-top: 1px dashed #000; margin: 40px 0; padding-top: 40px;"></div>' + 
+            viaOriginal;
 
-const nomeArquivo = `Pedido_CLAF_${produtor.replace(/\s+/g, '_')}_${data}.pdf`;
+        const nomeArquivo = `Pedido_CLAF_${produtor.replace(/\s+/g, '_')}_${data}.pdf`;
 
-const opcoesPDF = {
-    margin: 0,
-    filename: nomeArquivo,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, backgroundColor: '#ffffff' },
-    jsPDF: { unit: 'mm', format: [80, 200], orientation: 'portrait' }
-};
+        const opcoesPDF = {
+            margin: 10,
+            filename: nomeArquivo,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
 
-requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-        html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
-    window.print();
-});
-
+        // 3. O PULO DO GATO: Pequeno atraso para garantir que não saia vazio
+        setTimeout(() => {
+            html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
+                // Abre a impressão do navegador logo após salvar o arquivo
+                window.print();
+                
+                // Restaura o elemento para uma via só (para não acumular no próximo envio)
+                elemento.innerHTML = viaOriginal;
+                
+                // Reinicia a página para limpar tudo com segurança
+                setTimeout(() => { location.reload(); }, 1000);
+            });
+        }, 1000); // 1 segundo de espera é o ideal para dispositivos móveis
     });
 });
         gerarRecibo(produtor, data, pedidos);
