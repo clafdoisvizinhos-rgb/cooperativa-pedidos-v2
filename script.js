@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', function() {
     produtoList = document.getElementById('produto-list');
     formulario = document.getElementById('pedido-form');
     
+    // Verificar se os elementos existem
+    if (!produtoInput || !produtoList || !formulario) {
+        console.error('Elementos do formulário não encontrados!');
+        return;
+    }
+    
     // Carregar produtos
     carregarProdutos();
     
@@ -32,13 +38,12 @@ async function carregarProdutos() {
         
         if (data.status === 'success') {
             produtosSuggestions = data.produtos;
-            mostrarMensagem('Produtos carregados com sucesso!', 'success');
+            console.log('Produtos carregados:', produtosSuggestions.length);
         } else {
-            mostrarMensagem('Erro ao carregar produtos', 'error');
+            console.error('Erro ao carregar produtos:', data);
         }
     } catch (error) {
-        console.error('Erro:', error);
-        mostrarMensagem('Erro ao conectar com o servidor', 'error');
+        console.error('Erro ao conectar:', error);
     }
 }
 
@@ -89,7 +94,7 @@ async function registrarPedido(e) {
     const unidade = document.getElementById('unidade').value;
     
     if (!produtor || !produto || !quantidade) {
-        mostrarMensagem('Preencha todos os campos!', 'error');
+        mostrarMensagem('⚠️ Preencha todos os campos!', 'error');
         return;
     }
     
@@ -141,20 +146,22 @@ function mostrarMensagem(texto, tipo) {
     mensagem.className = `mensagem ${tipo}`;
     mensagem.textContent = texto;
     
-    document.querySelector('.container').insertBefore(
-        mensagem, 
-        document.querySelector('.form-card')
-    );
+    const container = document.querySelector('.container');
+    const formCard = document.querySelector('.form-card');
     
-    setTimeout(() => {
-        mensagem.remove();
-    }, 3000);
+    if (container && formCard) {
+        container.insertBefore(mensagem, formCard);
+        
+        setTimeout(() => {
+            mensagem.remove();
+        }, 3000);
+    }
 }
 
 // Fechar lista ao clicar fora
 document.addEventListener('click', function(e) {
-    if (e.target !== produtoInput && e.target.className !== 'produto-item') {
-        if (produtoList) {
+    if (produtoInput && produtoList) {
+        if (e.target !== produtoInput && e.target.className !== 'produto-item') {
             produtoList.style.display = 'none';
         }
     }
