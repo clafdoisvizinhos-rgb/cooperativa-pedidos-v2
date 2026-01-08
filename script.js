@@ -133,6 +133,7 @@ async function enviarPedidos(e) {
         }
         
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
+        montarCupomPDF(produtor, data, pedidos);
        
 const elemento = document.getElementById('pdf-cupom');
 
