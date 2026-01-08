@@ -133,6 +133,21 @@ async function enviarPedidos(e) {
         }
         
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
+        montarCupomPDF(produtor, data, pedidos);
+
+const elemento = document.getElementById('pdf-cupom');
+
+const nomeArquivo = `Pedido_CLAF_${produtor.replace(/\s+/g, '_')}_${data}.pdf`;
+
+const opcoesPDF = {
+    margin: 0,
+    filename: nomeArquivo,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, backgroundColor: '#ffffff' },
+    jsPDF: { unit: 'mm', format: [80, 200], orientation: 'portrait' }
+};
+
+html2pdf().set(opcoesPDF).from(elemento).save();
         gerarRecibo(produtor, data, pedidos);
 
 setTimeout(() => {
