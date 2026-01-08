@@ -1,55 +1,3 @@
-// URL do Web App (Apps Script)
-const API_URL = 'https://script.google.com/macros/s/AKfycbwgMp4mUmzexojmFqMHExfL72ykfxFQuXN-W5rKxRJY6D8vbhUQTahVKSH_3WVZgIkh/exec';
-
-// Elementos do DOM
-const form = document.getElementById('pedidoForm');
-const nomeInput = document.getElementById('nomeProdutor');
-const produtosContainer = document.getElementById('produtosContainer');
-const mensagemDiv = document.getElementById('mensagem');
-
-// Carrega a lista de produtos ao iniciar
-document.addEventListener('DOMContentLoaded', carregarProdutos);
-
-// Função para carregar produtos da planilha
-async function carregarProdutos() {
-    try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-        
-        if (data.status === 'success') {
-            renderizarProdutos(data.produtos);
-        } else {
-            mostrarMensagem('Erro ao carregar produtos: ' + data.message, 'erro');
-        }
-    } catch (error) {
-        mostrarMensagem('Erro ao conectar com o servidor: ' + error.message, 'erro');
-    }
-}
-
-// Função para renderizar os produtos na tela
-function renderizarProdutos(produtos) {
-    produtosContainer.innerHTML = '';
-    
-    produtos.forEach(produto => {
-        const produtoDiv = document.createElement('div');
-        produtoDiv.className = 'produto-item';
-        
-        produtoDiv.innerHTML = `
-            <span class="produto-nome">${produto}</span>
-            <input 
-                type="number" 
-                class="produto-input" 
-                data-produto="${produto}"
-                min="0" 
-                step="0.01"
-                placeholder="0"
-            >
-        `;
-        
-        produtosContainer.appendChild(produtoDiv);
-    });
-}
-
 // Função para enviar o formulário
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -61,7 +9,6 @@ form.addEventListener('submit', async (e) => {
         return;
     }
     
-    // Coleta os produtos com quantidade > 0
     const inputs = document.querySelectorAll('.produto-input');
     const produtos = [];
     
@@ -80,26 +27,20 @@ form.addEventListener('submit', async (e) => {
         return;
     }
     
-    // Envia os dados
     try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                nome: nome,
-                produtos: produtos
-            })
+        // Cria URL com parâmetros
+        const params = new URLSearchParams({
+            action: 'save',
+            nome: nome,
+            dados: JSON.stringify(produtos)
         });
         
+        const response = await fetch(`${API_URL}?${params.toString()}`);
         const data = await response.json();
         
         if (data.status === 'success') {
             mostrarMensagem('✅ ' + data.message, 'sucesso');
             form.reset();
-            
-            // Limpa os inputs de quantidade
             inputs.forEach(input => input.value = '');
         } else {
             mostrarMensagem('❌ Erro: ' + data.message, 'erro');
@@ -108,15 +49,3 @@ form.addEventListener('submit', async (e) => {
         mostrarMensagem('❌ Erro ao enviar dados: ' + error.message, 'erro');
     }
 });
-
-// Função para mostrar mensagens
-function mostrarMensagem(texto, tipo) {
-    mensagemDiv.textContent = texto;
-    mensagemDiv.className = `mensagem ${tipo}`;
-    mensagemDiv.classList.remove('hidden');
-    
-    // Oculta a mensagem após 5 segundos
-    setTimeout(() => {
-        mensagemDiv.classList.add('hidden');
-    }, 5000);
-}
