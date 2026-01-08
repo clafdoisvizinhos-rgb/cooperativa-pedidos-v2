@@ -283,3 +283,16 @@ function gerarReciboNaTela(produtor, data, pedidos) {
         recibo.innerHTML = '';
     };
 }
+function gerarRecibo(produtor, data, pedidos) {
+    document.getElementById('reciboProdutor').innerText = produtor;
+    document.getElementById('reciboData').innerText = data;
+
+    const itensDiv = document.getElementById('reciboItens');
+    itensDiv.innerHTML = '';
+
+    pedidos.forEach(p => {
+        const linha = document.createElement('p');
+        linha.innerHTML = `${p.produto} — <strong>${p.quantidade}</strong>`;
+        itensDiv.appendChild(linha);
+    });
+}
