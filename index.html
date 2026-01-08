@@ -21,9 +21,10 @@
             </div>
 
             <div class="form-group">
-                <label for="produto">Nome do Produto:</label>
-                <input type="text" id="produto" required placeholder="Digite ou selecione o produto" list="listaProdutos" autocomplete="off">
-                <datalist id="listaProdutos"></datalist>
+                <label for="produto">Selecione o Produto:</label>
+                <select id="produto" required>
+                    <option value="">Carregando produtos...</option>
+                </select>
             </div>
 
             <div class="form-group">
