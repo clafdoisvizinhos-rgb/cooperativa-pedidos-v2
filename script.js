@@ -154,10 +154,6 @@ requestAnimationFrame(() => {
 });
         gerarRecibo(produtor, data, pedidos);
 
-setTimeout(() => {
-    window.print();
-}, 300);
-
         // Limpa formulário
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
         document.querySelectorAll('input[type="number"]').forEach(input => {
