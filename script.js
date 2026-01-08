@@ -227,14 +227,7 @@ function salvarEImprimirRecibo(produtor, data, pedidos) {
             <p class="rodape">Emitido em: ${agora}</p>
             <p class="rodape">Cooperativa CLAF agradece!</p>
 
-            <script>
-                window.onload = function () {
-                    window.print();
-                    window.onafterprint = function () {
-                        window.close();
-                    };
-                };
-            </script>
+            
         </body>
         </html>
     `;
