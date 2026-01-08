@@ -8,27 +8,48 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🌾 Cooperativa Familiar</h1>
-            <p>Registro de Entrega de Produtos</p>
-        </header>
+        <div class="header">
+            <div class="logo">🌾</div>
+            <h1>Cooperativa Familiar</h1>
+            <p class="subtitle">Registro de Entrega de Produtos</p>
+        </div>
 
-        <form id="pedidoForm">
-            <div class="form-group">
-                <label for="nomeProdutor">Nome do Produtor:</label>
-                <input type="text" id="nomeProdutor" required placeholder="Digite o nome do produtor">
-            </div>
+        <div class="form-card">
+            <form id="pedido-form">
+                <div class="form-group">
+                    <label for="produtor">Nome do Produtor:</label>
+                    <input type="text" id="produtor" placeholder="Digite o nome do produtor" required>
+                </div>
 
-            <div class="produtos-container" id="produtosContainer">
-                <p class="loading">Carregando produtos...</p>
-            </div>
+                <div class="form-group">
+                    <label for="produto">Nome do Produto:</label>
+                    <input type="text" id="produto" placeholder="Digite o nome do produto" required autocomplete="off">
+                    <div id="produto-list" class="produto-list"></div>
+                </div>
 
-            <button type="submit" class="btn-submit">
-                📦 Registrar Pedido
-            </button>
-        </form>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quantidade">Quantidade:</label>
+                        <input type="number" id="quantidade" placeholder="0" step="0.01" required>
+                    </div>
 
-        <div id="mensagem" class="mensagem hidden"></div>
+                    <div class="form-group">
+                        <label for="unidade">Unidade:</label>
+                        <select id="unidade" required>
+                            <option value="kg">Kg</option>
+                            <option value="unidade">Unidade</option>
+                            <option value="dúzia">Dúzia</option>
+                            <option value="maço">Maço</option>
+                            <option value="caixa">Caixa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    📦 Registrar Pedido
+                </button>
+            </form>
+        </div>
     </div>
 
     <script src="script.js"></script>
