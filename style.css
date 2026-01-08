@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #126eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     padding: 20px;
 }
@@ -134,7 +134,7 @@ input[type="date"]:focus {
 }
 
 .lista-produtos::-webkit-scrollbar-thumb {
-    background: #127eea;
+    background: #667eea;
     border-radius: 10px;
 }
 
