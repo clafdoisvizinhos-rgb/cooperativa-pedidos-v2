@@ -131,10 +131,9 @@ async function enviarPedidos(e) {
             // Pequeno delay entre requisições
             await new Promise(resolve => setTimeout(resolve, 300));
         }
-        
+        await new Promise(resolve => setTimeout(resolve, 500));
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
         montarCupomPDF(produtor, data, pedidos);
-        await new Promise(resolve => setTimeout(resolve, 500));
       
 const elemento = document.getElementById('pdf-cupom');
 
