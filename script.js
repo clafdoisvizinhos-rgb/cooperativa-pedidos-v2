@@ -133,6 +133,7 @@ async function enviarPedidos(e) {
         }
         
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
+        salvarEImprimirRecibo(produtor, data, pedidos);
         
         // Limpa formulário
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
