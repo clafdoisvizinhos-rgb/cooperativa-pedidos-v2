@@ -309,3 +309,21 @@ window.onafterprint = function () {
         location.reload();
     }
 };
+function montarCupomPDF(produtor, data, pedidos) {
+    document.getElementById('pdfProdutor').innerText = produtor;
+    document.getElementById('pdfData').innerText = data;
+    document.getElementById('pdfHora').innerText = new Date().toLocaleString('pt-BR');
+
+    const itensDiv = document.getElementById('pdfItens');
+    itensDiv.innerHTML = '';
+
+    pedidos.forEach(p => {
+        const linha = document.createElement('div');
+        linha.style.display = 'flex';
+        linha.style.justifyContent = 'space-between';
+        linha.style.fontSize = '12px';
+        linha.style.marginBottom = '2px';
+        linha.innerHTML = `<span>${p.produto}</span><span>${p.quantidade}</span>`;
+        itensDiv.appendChild(linha);
+    });
+}
