@@ -1,5 +1,5 @@
 // URL do Web App (Apps Script)
-const API_URL = 'https://script.google.com/macros/s/AKfycbwFILkBvW2-hSZpwWDfKdopClDzkDMKbiOKtG6rC4xiI8dnjKTalEwejT5keqI97wD_/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwgMp4mUmzexojmFqMHExfL72ykfxFQuXN-W5rKxRJY6D8vbhUQTahVKSH_3WVZgIkh/exec';
 
 // Elementos do DOM
 const form = document.getElementById('pedidoForm');
