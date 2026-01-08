@@ -134,7 +134,7 @@ input[type="date"]:focus {
 }
 
 .lista-produtos::-webkit-scrollbar-thumb {
-    background: #667eea;
+    background: #127eea;
     border-radius: 10px;
 }
 
