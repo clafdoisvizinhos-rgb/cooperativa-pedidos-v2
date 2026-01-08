@@ -87,6 +87,7 @@ async function enviarPedidos(e) {
         return;
     }
     
+    // Coleta produtos marcados
     const pedidos = [];
     const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
     
@@ -109,32 +110,39 @@ async function enviarPedidos(e) {
         return;
     }
     
+    console.log('📤 Enviando pedidos:', pedidos);
+    
     const btnSubmit = document.querySelector('.btn-submit');
     btnSubmit.disabled = true;
     btnSubmit.textContent = '⏳ Enviando...';
     
     try {
-        // Envio para a planilha
+        // Envia cada pedido
         for (const pedido of pedidos) {
             await fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify(pedido)
             });
+            
+            // Pequeno delay entre requisições
             await new Promise(resolve => setTimeout(resolve, 300));
         }
-
+        await new Promise(resolve => setTimeout(resolve, 500));
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
-        
-        // --- PROCESSO DO CUPOM (CORRIGIDO) ---
+       // 1. Preenche os dados no cupom
         montarCupomPDF(produtor, data, pedidos);
+        
         const elemento = document.getElementById('pdf-cupom');
+        
+        // 2. DUPLICA O CONTEÚDO (Cria as duas vias)
+        // Guardamos o original, somamos ele mesmo com uma linha divisória
         const viaOriginal = elemento.innerHTML;
-
-        // Criação das duas vias
         elemento.innerHTML = viaOriginal + 
-            '<div style="border-top: 2px dashed #000; margin: 40px 0; padding-top: 40px;"></div>' + 
+            '<div style="border-top: 1px dashed #000; margin: 40px 0; padding-top: 40px;"></div>' + 
             viaOriginal;
 
         const nomeArquivo = `Pedido_CLAF_${produtor.replace(/\s+/g, '_')}_${data}.pdf`;
@@ -147,15 +155,30 @@ async function enviarPedidos(e) {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // Delay crucial para evitar cupom vazio
+        // 3. O PULO DO GATO: Pequeno atraso para garantir que não saia vazio
         setTimeout(() => {
             html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
+                // Abre a impressão do navegador logo após salvar o arquivo
                 window.print();
-                // Limpeza após impressão
-                setTimeout(() => { location.reload(); }, 1500);
+                
+                // Restaura o elemento para uma via só (para não acumular no próximo envio)
+                elemento.innerHTML = viaOriginal;
+                
+                // Reinicia a página para limpar tudo com segurança
+                setTimeout(() => { location.reload(); }, 1000);
             });
-        }, 1000);
+        }, 1000); // 1 segundo de espera é o ideal para dispositivos móveis
+    });
+});
+        gerarRecibo(produtor, data, pedidos);
 
+        // Limpa formulário
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.value = '';
+            input.disabled = true;
+        });
+        
     } catch (erro) {
         console.error('❌ Erro:', erro);
         mostrarMensagem('❌ Erro ao registrar pedidos', 'erro');
@@ -164,33 +187,182 @@ async function enviarPedidos(e) {
         btnSubmit.textContent = '📦 Registrar Pedidos';
     }
 }
+function salvarEImprimirRecibo(produtor, data, pedidos) {
+    // Cria uma nova janela para impressão
+    const janela = window.open('', '_blank', 'width=400,height=600');
 
-// Mantive esta função para que o código não quebre
-function montarCupomPDF(produtor, data, pedidos) {
-    const pdfProdutor = document.getElementById('pdfProdutor');
-    const pdfData = document.getElementById('pdfData');
-    const pdfHora = document.getElementById('pdfHora');
-    const itensDiv = document.getElementById('pdfItens');
-
-    if (pdfProdutor) pdfProdutor.innerText = produtor;
-    if (pdfData) pdfData.innerText = data;
-    if (pdfHora) pdfHora.innerText = new Date().toLocaleString('pt-BR');
-
-    if (itensDiv) {
-        itensDiv.innerHTML = '';
-        pedidos.forEach(p => {
-            const linha = document.createElement('div');
-            linha.style.display = 'flex';
-            linha.style.justifyContent = 'space-between';
-            linha.style.fontSize = '12px';
-            linha.style.marginBottom = '2px';
-            linha.innerHTML = `<span>${p.produto}</span><span>${p.quantidade}</span>`;
-            itensDiv.appendChild(linha);
-        });
+    if (!janela) {
+        alert('⚠️ Pop-up bloqueado. Permita pop-ups para imprimir o recibo.');
+        return;
     }
-}
 
-// Atalho de segurança
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') location.reload();
+    // Monta o conteúdo do recibo (estilo cupom)
+    let conteudo = `
+        <html>
+        <head>
+            <title>Recibo CLAF</title>
+            <style>
+                body {
+                    font-family: monospace;
+                    font-size: 12px;
+                    padding: 10px;
+                }
+                h2, h3 {
+                    text-align: center;
+                    margin: 4px 0;
+                }
+                .linha {
+                    border-top: 1px dashed #000;
+                    margin: 8px 0;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                td {
+                    padding: 2px 0;
+                }
+                .qtd {
+                    text-align: right;
+                }
+                .rodape {
+                    text-align: center;
+                    margin-top: 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <h2>COOPERATIVA CLAF</h2>
+            <h3>RECIBO DE ENTREGA</h3>
+
+            <div class="linha"></div>
+
+            <p><strong>Produtor:</strong> ${produtor}</p>
+            <p><strong>Data:</strong> ${data}</p>
+
+            <div class="linha"></div>
+
+            <table>
+    `;
+
+    pedidos.forEach(p => {
+        conteudo += `
+            <tr>
+                <td>${p.produto}</td>
+                <td class="qtd">${p.quantidade}</td>
+            </tr>
+        `;
+    });
+
+    const agora = new Date().toLocaleString('pt-BR');
+
+    conteudo += `
+            </table>
+
+            <div class="linha"></div>
+
+            <p class="rodape">Emitido em: ${agora}</p>
+            <p class="rodape">Cooperativa CLAF agradece!</p>
+
+            
+        </body>
+        </html>
+    `;
+
+    janela.document.open();
+    janela.document.write(conteudo);
+    janela.document.close();
+}
+function gerarReciboNaTela(produtor, data, pedidos) {
+    const recibo = document.getElementById('recibo');
+
+    let html = `
+        <h2>COOPERATIVA CLAF</h2>
+        <h3>RECIBO DE ENTREGA</h3>
+
+        <div class="linha"></div>
+
+        <p><strong>Produtor:</strong> ${produtor}</p>
+        <p><strong>Data:</strong> ${data}</p>
+
+        <div class="linha"></div>
+
+        <table>
+    `;
+
+    pedidos.forEach(p => {
+        html += `
+            <tr>
+                <td>${p.produto}</td>
+                <td class="qtd">${p.quantidade}</td>
+            </tr>
+        `;
+    });
+
+    const agora = new Date().toLocaleString('pt-BR');
+
+    html += `
+        </table>
+
+        <div class="linha"></div>
+
+        <p>Emitido em: ${agora}</p>
+        <p style="text-align:center;">Cooperativa CLAF agradece!</p>
+    `;
+
+    recibo.innerHTML = html;
+    recibo.style.display = 'block';
+
+    window.print();
+
+    window.onafterprint = () => {
+        recibo.style.display = 'none';
+        recibo.innerHTML = '';
+    };
+}
+function gerarRecibo(produtor, data, pedidos) {
+    document.getElementById('reciboProdutor').innerText = produtor;
+    document.getElementById('reciboData').innerText = data;
+
+    const itensDiv = document.getElementById('reciboItens');
+    itensDiv.innerHTML = '';
+
+    pedidos.forEach(p => {
+        const linha = document.createElement('p');
+        linha.innerHTML = `${p.produto} — <strong>${p.quantidade}</strong>`;
+        itensDiv.appendChild(linha);
+    });
+}
+window.onafterprint = function () {
+    // Fecha a visualização de impressão (se for aba nova)
+    if (window.opener) {
+        window.close();
+    } else {
+        // Caso esteja na mesma aba, reinicia o formulário
+        location.reload();
+    }
+};
+function montarCupomPDF(produtor, data, pedidos) {
+    document.getElementById('pdfProdutor').innerText = produtor;
+    document.getElementById('pdfData').innerText = data;
+    document.getElementById('pdfHora').innerText = new Date().toLocaleString('pt-BR');
+
+    const itensDiv = document.getElementById('pdfItens');
+    itensDiv.innerHTML = '';
+
+    pedidos.forEach(p => {
+        const linha = document.createElement('div');
+        linha.style.display = 'flex';
+        linha.style.justifyContent = 'space-between';
+        linha.style.fontSize = '12px';
+        linha.style.marginBottom = '2px';
+        linha.innerHTML = `<span>${p.produto}</span><span>${p.quantidade}</span>`;
+        itensDiv.appendChild(linha);
+    });
+}
+// Após salvar o PDF, permite imprimir manualmente e reiniciar
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        location.reload();
+    }
 });
