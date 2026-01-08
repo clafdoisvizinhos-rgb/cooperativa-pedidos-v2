@@ -133,8 +133,8 @@ async function enviarPedidos(e) {
         }
         
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
-        salvarEImprimirRecibo(produtor, data, pedidos);
-        
+        gerarReciboNaTela(produtor, data, pedidos);
+
         // Limpa formulário
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
         document.querySelectorAll('input[type="number"]').forEach(input => {
@@ -242,4 +242,51 @@ function salvarEImprimirRecibo(produtor, data, pedidos) {
     janela.document.open();
     janela.document.write(conteudo);
     janela.document.close();
+}
+function gerarReciboNaTela(produtor, data, pedidos) {
+    const recibo = document.getElementById('recibo');
+
+    let html = `
+        <h2>COOPERATIVA CLAF</h2>
+        <h3>RECIBO DE ENTREGA</h3>
+
+        <div class="linha"></div>
+
+        <p><strong>Produtor:</strong> ${produtor}</p>
+        <p><strong>Data:</strong> ${data}</p>
+
+        <div class="linha"></div>
+
+        <table>
+    `;
+
+    pedidos.forEach(p => {
+        html += `
+            <tr>
+                <td>${p.produto}</td>
+                <td class="qtd">${p.quantidade}</td>
+            </tr>
+        `;
+    });
+
+    const agora = new Date().toLocaleString('pt-BR');
+
+    html += `
+        </table>
+
+        <div class="linha"></div>
+
+        <p>Emitido em: ${agora}</p>
+        <p style="text-align:center;">Cooperativa CLAF agradece!</p>
+    `;
+
+    recibo.innerHTML = html;
+    recibo.style.display = 'block';
+
+    window.print();
+
+    window.onafterprint = () => {
+        recibo.style.display = 'none';
+        recibo.innerHTML = '';
+    };
 }
