@@ -1,25 +1,34 @@
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwgMp4mUmzexojmFqMHExfL72ykfxFQuXN-W5rKxRJY6D8vbhUQTahVKSH_3WVZgIkh/exec';
 
-// Carrega produtos
+// Carrega produtos no SELECT
 async function carregarProdutos() {
+    const selectProduto = document.getElementById('produto');
+    
     try {
+        console.log('🔄 Carregando produtos...');
         const response = await fetch(SCRIPT_URL);
         const data = await response.json();
         
-        if (data.produtos) {
-            const datalist = document.getElementById('listaProdutos');
-            datalist.innerHTML = '';
+        if (data.produtos && data.produtos.length > 0) {
+            // Limpa o select
+            selectProduto.innerHTML = '<option value="">-- Selecione um produto --</option>';
             
+            // Adiciona cada produto como opção
             data.produtos.forEach(produto => {
                 const option = document.createElement('option');
                 option.value = produto;
-                datalist.appendChild(option);
+                option.textContent = produto;
+                selectProduto.appendChild(option);
             });
             
             console.log('✅ Produtos carregados:', data.produtos.length);
+        } else {
+            selectProduto.innerHTML = '<option value="">Nenhum produto encontrado</option>';
+            console.warn('⚠️ Nenhum produto retornado');
         }
     } catch (erro) {
         console.error('❌ Erro ao carregar produtos:', erro);
+        selectProduto.innerHTML = '<option value="">Erro ao carregar produtos</option>';
     }
 }
 
@@ -40,11 +49,22 @@ async function enviarPedido(e) {
     e.preventDefault();
     
     const produtor = document.getElementById('produtor').value.trim();
-    const produto = document.getElementById('produto').value.trim().toUpperCase();
+    const produto = document.getElementById('produto').value;
     const quantidade = document.getElementById('quantidade').value;
     
-    if (!produtor || !produto || !quantidade) {
-        mostrarMensagem('❌ Preencha todos os campos', 'erro');
+    // Validação
+    if (!produtor) {
+        mostrarMensagem('❌ Digite o nome do produtor', 'erro');
+        return;
+    }
+    
+    if (!produto) {
+        mostrarMensagem('❌ Selecione um produto', 'erro');
+        return;
+    }
+    
+    if (!quantidade || quantidade <= 0) {
+        mostrarMensagem('❌ Digite uma quantidade válida', 'erro');
         return;
     }
     
@@ -56,6 +76,11 @@ async function enviarPedido(e) {
     
     console.log('📤 Enviando:', dados);
     
+    // Desabilita botão durante envio
+    const btnSubmit = document.querySelector('.btn-submit');
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = '⏳ Enviando...';
+    
     try {
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
@@ -66,18 +91,31 @@ async function enviarPedido(e) {
             body: JSON.stringify(dados)
         });
         
-        // Como é no-cors, assumimos sucesso
+        // Sucesso
         mostrarMensagem('✅ Pedido registrado com sucesso!', 'sucesso');
-        document.getElementById('formPedido').reset();
+        
+        // Limpa apenas produto e quantidade (mantém o nome do produtor)
+        document.getElementById('produto').value = '';
+        document.getElementById('quantidade').value = '';
+        
+        // Foca no campo produto para próximo registro
+        document.getElementById('produto').focus();
         
     } catch (erro) {
         console.error('❌ Erro:', erro);
         mostrarMensagem('❌ Erro ao registrar pedido', 'erro');
+    } finally {
+        // Reabilita botão
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = '📦 Registrar Pedido';
     }
 }
 
-// Inicializa
+// Inicializa quando página carregar
 document.addEventListener('DOMContentLoaded', () => {
     carregarProdutos();
     document.getElementById('formPedido').addEventListener('submit', enviarPedido);
+    
+    // Foca no primeiro campo
+    document.getElementById('produtor').focus();
 });
