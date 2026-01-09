@@ -131,10 +131,10 @@ async function enviarPedidos(e) {
             // Pequeno delay entre requisições
             await new Promise(resolve => setTimeout(resolve, 300));
         }
-        
+        await new Promise(resolve => setTimeout(resolve, 500));
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
         montarCupomPDF(produtor, data, pedidos);
-
+      
 const elemento = document.getElementById('pdf-cupom');
 
 const nomeArquivo = `Pedido_CLAF_${produtor.replace(/\s+/g, '_')}_${data}.pdf`;
@@ -149,14 +149,13 @@ const opcoesPDF = {
 
 requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-        html2pdf().set(opcoesPDF).from(elemento).save();
+        html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
+    window.print();
+});
+
     });
 });
         gerarRecibo(produtor, data, pedidos);
-
-setTimeout(() => {
-    window.print();
-}, 300);
 
         // Limpa formulário
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
