@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cooperativa CLAF - Registro de Pedidos</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -42,63 +41,10 @@
             </button>
         </form>
     </div>
-<!-- RECIBO PARA IMPRESSÃO / PDF -->
-<div id="recibo" style="display:none; width:76mm; font-family: monospace;">
-    <h2 style="text-align:center;">COOPERATIVA CLAF</h2>
-    <p style="text-align:center;">RECIBO DE ENTREGA</p>
-    <hr>
-
-    <p><strong>Produtor:</strong> <span id="reciboProdutor"></span></p>
-    <p><strong>Data:</strong> <span id="reciboData"></span></p>
-
-    <hr>
-
-    <div id="reciboItens"></div>
-
-    <hr>
-    <p style="text-align:center; font-size:10px;">
-        Cooperativa CLAF agradece!
-    </p>
-</div>
-<!-- CUPOM PARA PDF (INVISÍVEL) -->
-<div id="pdf-cupom" style="
-    position: absolute;
-    left: 0;
-    visibility: hidden
-    top: 0;
-    width: 80mm;
-    background: white;
-    padding: 6mm;
-    font-family: monospace;
-">
-    <div style="text-align:center; margin-bottom:6px;">
-        <strong>COOPERATIVA CLAF</strong><br>
-        <small>RECIBO DE ENTREGA</small>
-    </div>
-
-    <div style="border-top:1px dashed #000; margin:6px 0;"></div>
-
-    <div><strong>PRODUTOR:</strong> <span id="pdfProdutor"></span></div>
-    <div><strong>DATA:</strong> <span id="pdfData"></span></div>
-
-    <div style="border-top:1px solid #000; margin:6px 0;"></div>
-
-    <div style="display:flex; justify-content:space-between; font-weight:bold;">
-        <span>PRODUTO</span>
-        <span>QTD</span>
-    </div>
-
-    <div id="pdfItens" style="margin-top:4px;"></div>
-
-    <div style="border-top:1px dashed #000; margin:8px 0;"></div>
-
-    <div style="text-align:center; font-size:10px;">
-        <div>Emitido em <span id="pdfHora"></span></div>
-        <strong>Cooperativa CLAF agradece!</strong>
-    </div>
-</div>
 
     <script src="script.js"></script>
+   <!-- RECIBO PARA IMPRESSÃO -->
+<div id="recibo" style="display:none;"></div>
 
 </body>
 </html>
