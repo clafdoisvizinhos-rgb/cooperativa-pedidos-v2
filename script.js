@@ -133,7 +133,8 @@ async function enviarPedidos(e) {
         }
         
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
-        
+        gerarReciboNaTela(produtor, data, pedidos);
+
         // Limpa formulário
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
         document.querySelectorAll('input[type="number"]').forEach(input => {
@@ -148,4 +149,144 @@ async function enviarPedidos(e) {
         btnSubmit.disabled = false;
         btnSubmit.textContent = '📦 Registrar Pedidos';
     }
+}
+function salvarEImprimirRecibo(produtor, data, pedidos) {
+    // Cria uma nova janela para impressão
+    const janela = window.open('', '_blank', 'width=400,height=600');
+
+    if (!janela) {
+        alert('⚠️ Pop-up bloqueado. Permita pop-ups para imprimir o recibo.');
+        return;
+    }
+
+    // Monta o conteúdo do recibo (estilo cupom)
+    let conteudo = `
+        <html>
+        <head>
+            <title>Recibo CLAF</title>
+            <style>
+                body {
+                    font-family: monospace;
+                    font-size: 12px;
+                    padding: 10px;
+                }
+                h2, h3 {
+                    text-align: center;
+                    margin: 4px 0;
+                }
+                .linha {
+                    border-top: 1px dashed #000;
+                    margin: 8px 0;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                td {
+                    padding: 2px 0;
+                }
+                .qtd {
+                    text-align: right;
+                }
+                .rodape {
+                    text-align: center;
+                    margin-top: 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <h2>COOPERATIVA CLAF</h2>
+            <h3>RECIBO DE ENTREGA</h3>
+
+            <div class="linha"></div>
+
+            <p><strong>Produtor:</strong> ${produtor}</p>
+            <p><strong>Data:</strong> ${data}</p>
+
+            <div class="linha"></div>
+
+            <table>
+    `;
+
+    pedidos.forEach(p => {
+        conteudo += `
+            <tr>
+                <td>${p.produto}</td>
+                <td class="qtd">${p.quantidade}</td>
+            </tr>
+        `;
+    });
+
+    const agora = new Date().toLocaleString('pt-BR');
+
+    conteudo += `
+            </table>
+
+            <div class="linha"></div>
+
+            <p class="rodape">Emitido em: ${agora}</p>
+            <p class="rodape">Cooperativa CLAF agradece!</p>
+
+            <script>
+                window.onload = function () {
+                    window.print();
+                    window.onafterprint = function () {
+                        window.close();
+                    };
+                };
+            </script>
+        </body>
+        </html>
+    `;
+
+    janela.document.open();
+    janela.document.write(conteudo);
+    janela.document.close();
+}
+function gerarReciboNaTela(produtor, data, pedidos) {
+    const recibo = document.getElementById('recibo');
+
+    let html = `
+        <h2>COOPERATIVA CLAF</h2>
+        <h3>RECIBO DE ENTREGA</h3>
+
+        <div class="linha"></div>
+
+        <p><strong>Produtor:</strong> ${produtor}</p>
+        <p><strong>Data:</strong> ${data}</p>
+
+        <div class="linha"></div>
+
+        <table>
+    `;
+
+    pedidos.forEach(p => {
+        html += `
+            <tr>
+                <td>${p.produto}</td>
+                <td class="qtd">${p.quantidade}</td>
+            </tr>
+        `;
+    });
+
+    const agora = new Date().toLocaleString('pt-BR');
+
+    html += `
+        </table>
+
+        <div class="linha"></div>
+
+        <p>Emitido em: ${agora}</p>
+        <p style="text-align:center;">Cooperativa CLAF agradece!</p>
+    `;
+
+    recibo.innerHTML = html;
+    recibo.style.display = 'block';
+
+    window.print();
+
+    window.onafterprint = () => {
+        recibo.style.display = 'none';
+        recibo.innerHTML = '';
+    };
 }
