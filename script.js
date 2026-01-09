@@ -165,9 +165,9 @@ async function enviarPedidos(e) {
                 elemento.innerHTML = viaOriginal;
                 
                 // Reinicia a página para limpar tudo com segurança
-                setTimeout(() => { location.reload(); }, 1000);
+                setTimeout(() => { location.reload(); }, 2000);
             });
-        }, 1000); // 1 segundo de espera é o ideal para dispositivos móveis
+        }, 2000); // 1 segundo de espera é o ideal para dispositivos móveis
     });
 });
         gerarRecibo(produtor, data, pedidos);
