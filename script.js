@@ -136,6 +136,11 @@ async function enviarPedidos(e) {
         montarCupomPDF(produtor, data, pedidos);
 
 const elemento = document.getElementById('pdf-cupom');
+        // Duplicar o conteúdo para ter duas vias no mesmo papel
+const conteudoOriginal = elemento.innerHTML;
+elemento.innerHTML = conteudoOriginal + 
+    '<div style="border-top: 2px dashed #000; margin: 30px 0; padding-top: 30px;"></div>' + 
+    conteudoOriginal;
 
 const nomeArquivo = `Pedido_CLAF_${produtor.replace(/\s+/g, '_')}_${data}.pdf`;
 
