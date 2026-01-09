@@ -147,10 +147,11 @@ const opcoesPDF = {
     jsPDF: { unit: 'mm', format: [80, 200], orientation: 'portrait' }
 };
 
-setTimeout(() => {
-    html2pdf().set(opcoesPDF).from(elemento).save();
-}, 400);
-
+requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+        html2pdf().set(opcoesPDF).from(elemento).save();
+    });
+});
         gerarRecibo(produtor, data, pedidos);
 
 setTimeout(() => {
