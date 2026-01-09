@@ -131,45 +131,39 @@ async function enviarPedidos(e) {
             // Pequeno delay entre requisições
             await new Promise(resolve => setTimeout(resolve, 300));
         }
+        
         mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
-
-        // 1. Preenche os dados no cupom
         montarCupomPDF(produtor, data, pedidos);
+
+const elemento = document.getElementById('pdf-cupom');
+
+const nomeArquivo = `Pedido_CLAF_${produtor.replace(/\s+/g, '_')}_${data}.pdf`;
+
+const opcoesPDF = {
+    margin: 0,
+    filename: nomeArquivo,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, backgroundColor: '#ffffff' },
+    jsPDF: { unit: 'mm', format: [80, 200], orientation: 'portrait' }
+};
+
+setTimeout(() => {
+    html2pdf().set(opcoesPDF).from(elemento).save();
+}, 400);
+
+        gerarRecibo(produtor, data, pedidos);
+
+setTimeout(() => {
+    window.print();
+}, 300);
+
+        // Limpa formulário
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.value = '';
+            input.disabled = true;
+        });
         
-        const elemento = document.getElementById('pdf-cupom');
-        
-        // 2. DUPLICA O CONTEÚDO (Cria as duas vias: uma sua e uma do produtor)
-        const viaOriginal = elemento.innerHTML;
-        elemento.innerHTML = `
-            <div style="padding: 10px;">${viaOriginal}</div>
-            <div style="border-top: 2px dashed #000; margin: 30px 0; padding-top: 10px;"></div>
-            <div style="padding: 10px;">${viaOriginal}</div>
-        `;
-
-        const nomeArquivo = `Pedido_CLAF_${produtor.replace(/\s+/g, '_')}_${data}.pdf`;
-
-        const opcoesPDF = {
-            margin: 5,
-            filename: nomeArquivo,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        // 3. AGUARDA O TEXTO APARECER (Isso impede que saia vazio)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // 4. Salva o arquivo no celular/computador
-        await html2pdf().set(opcoesPDF).from(elemento).save();
-
-        // 5. Abre a janela de impressão uma única vez (com as duas vias)
-        window.print();
-
-        // 6. Limpa e reinicia para o próximo pedido
-        setTimeout(() => {
-            location.reload();
-        }, 1500);
-
     } catch (erro) {
         console.error('❌ Erro:', erro);
         mostrarMensagem('❌ Erro ao registrar pedidos', 'erro');
