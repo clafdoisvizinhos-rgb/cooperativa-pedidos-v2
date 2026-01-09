@@ -240,3 +240,18 @@ input[type="date"]:focus {
         gap: 10px;
     }
 }
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.logo img {
+    max-width: 170px;
+    width: auto;
+    height: auto;
+    display: block;
+}
