@@ -303,19 +303,3 @@ input[type="date"]:focus {
         width: 100%;
     }
 }
-
-/* Este código faz o navegador imprimir APENAS o cupom e ignora o resto */
-@media print {
-    body * { 
-        visibility: hidden !important; 
-    }
-    #pdf-cupom, #pdf-cupom * { 
-        visibility: visible !important; 
-    }
-    #pdf-cupom { 
-        position: absolute !important; 
-        left: 0 !important; 
-        top: 0 !important; 
-        width: 100% !important; 
-    }
-}
