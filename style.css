@@ -1,272 +1,368 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwgMp4mUmzexojmFqMHExfL72ykfxFQuXN-W5rKxRJY6D8vbhUQTahVKSH_3WVZgIkh/exec';
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 20px;
-}
+// Define data de hoje como padrão
+document.addEventListener('DOMContentLoaded', () => {
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('data').value = hoje;
+    carregarProdutos();
+    document.getElementById('formPedido').addEventListener('submit', enviarPedidos);
+});
 
-.container {
-    max-width: 600px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 20px;
-    padding: 40px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.logo {
-    text-align: center;
-    font-size: 60px;
-    margin-bottom: 20px;
-}
-
-h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 32px;
-}
-
-.subtitle {
-    text-align: center;
-    color: #666;
-    margin-bottom: 30px;
-    font-size: 16px;
-}
-
-.mensagem {
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    text-align: center;
-    font-weight: bold;
-    transition: all 0.3s ease;
-}
-
-.mensagem.sucesso {
-    background-color: #d4edda;
-    color: #155724;
-    border: 2px solid #c3e6cb;
-}
-
-.mensagem.erro {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 2px solid #f5c6cb;
-}
-
-.mensagem.oculto {
-    display: none;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-label {
-    display: block;
-    margin-bottom: 8px;
-    color: #333;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-input[type="text"],
-input[type="date"] {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 16px;
-    transition: all 0.3s ease;
-}
-
-input[type="text"]:focus,
-input[type="date"]:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.produtos-header {
-    display: grid;
-    grid-template-columns: 1fr 120px;
-    gap: 15px;
-    padding: 12px 15px;
-    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-    border-radius: 10px;
-    margin-top: 30px;
-    margin-bottom: 10px;
-    font-weight: bold;
-    color: #333;
-}
-
-.header-produto {
-    text-align: left;
-}
-
-.header-qtd {
-    text-align: center;
-}
-
-.lista-produtos {
-    max-height: 400px;
-    overflow-y: auto;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 20px;
-}
-
-.lista-produtos::-webkit-scrollbar {
-    width: 8px;
-}
-
-.lista-produtos::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.lista-produtos::-webkit-scrollbar-thumb {
-    background: #667eea;
-    border-radius: 10px;
-}
-
-.carregando {
-    text-align: center;
-    color: #999;
-    padding: 20px;
-}
-
-.produto-item {
-    display: grid;
-    grid-template-columns: 1fr 120px;
-    gap: 15px;
-    padding: 12px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    transition: background 0.2s ease;
-}
-
-.produto-item:hover {
-    background: #f8f9ff;
-}
-
-.produto-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.produto-checkbox input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-}
-
-.produto-checkbox label {
-    margin: 0;
-    cursor: pointer;
-    font-weight: normal;
-    color: #333;
-}
-
-.produto-item input[type="number"] {
-    width: 100%;
-    padding: 8px 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 16px;
-    text-align: center;
-}
-
-.produto-item input[type="number"]:disabled {
-    background: #f5f5f5;
-    cursor: not-allowed;
-}
-
-.produto-item input[type="number"]:focus {
-    outline: none;
-    border-color: #667eea;
-}
-
-.btn-submit {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-}
-
-.btn-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-}
-
-.btn-submit:active {
-    transform: translateY(0);
-}
-
-.btn-submit:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    transform: none;
-}
-
-@media (max-width: 600px) {
-    .container {
-        padding: 20px;
-    }
-
-    h1 {
-        font-size: 24px;
-    }
-
-    .produtos-header,
-    .produto-item {
-        grid-template-columns: 1fr 100px;
-        gap: 10px;
+// Carrega produtos e cria lista com checkboxes
+async function carregarProdutos() {
+    const listaProdutos = document.getElementById('listaProdutos');
+    
+    try {
+        console.log('🔄 Carregando produtos...');
+        const response = await fetch(SCRIPT_URL);
+        const data = await response.json();
+        
+        if (data.produtos && data.produtos.length > 0) {
+            listaProdutos.innerHTML = '';
+            
+            data.produtos.forEach((produto, index) => {
+                const div = document.createElement('div');
+                div.className = 'produto-item';
+                div.innerHTML = `
+                    <div class="produto-checkbox">
+                        <input type="checkbox" id="check_${index}" onchange="toggleQuantidade(${index})">
+                        <label for="check_${index}">${produto}</label>
+                    </div>
+                    <input type="number" 
+                           id="qtd_${index}" 
+                           min="0.1" 
+                           step="0.1" 
+                           placeholder="0" 
+                           disabled
+                           data-produto="${produto}">
+                `;
+                listaProdutos.appendChild(div);
+            });
+            
+            console.log('✅ Produtos carregados:', data.produtos.length);
+        } else {
+            listaProdutos.innerHTML = '<p class="carregando">Nenhum produto encontrado</p>';
+        }
+    } catch (erro) {
+        console.error('❌ Erro ao carregar produtos:', erro);
+        listaProdutos.innerHTML = '<p class="carregando">Erro ao carregar produtos</p>';
     }
 }
-.logo {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    overflow: hidden;
-    margin-bottom: 12px;
+
+// Habilita/desabilita campo de quantidade
+function toggleQuantidade(index) {
+    const checkbox = document.getElementById(`check_${index}`);
+    const quantidade = document.getElementById(`qtd_${index}`);
+    
+    quantidade.disabled = !checkbox.checked;
+    
+    if (checkbox.checked) {
+        quantidade.focus();
+    } else {
+        quantidade.value = '';
+    }
 }
 
-.logo img {
-    max-width: 170px;
-    width: auto;
-    height: auto;
-    display: block;
+// Mostra mensagem
+function mostrarMensagem(texto, tipo) {
+    const mensagem = document.getElementById('mensagem');
+    mensagem.textContent = texto;
+    mensagem.className = `mensagem ${tipo}`;
+    mensagem.classList.remove('oculto');
+    
+    setTimeout(() => {
+        mensagem.classList.add('oculto');
+    }, 5000);
 }
-/* Este código faz o navegador imprimir APENAS o cupom e ignora o resto */
-@media print {
-    body * { 
-        visibility: hidden !important; 
+
+// Envia todos os pedidos selecionados
+async function enviarPedidos(e) {
+    e.preventDefault();
+    
+    const produtor = document.getElementById('produtor').value.trim();
+    const data = document.getElementById('data').value;
+    
+    if (!produtor) {
+        mostrarMensagem('❌ Digite o nome do produtor', 'erro');
+        return;
     }
-    #pdf-cupom, #pdf-cupom * { 
-        visibility: visible !important; 
+    
+    // Coleta produtos marcados
+    const pedidos = [];
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    
+    checkboxes.forEach(checkbox => {
+        const index = checkbox.id.split('_')[1];
+        const qtdInput = document.getElementById(`qtd_${index}`);
+        const quantidade = parseFloat(qtdInput.value);
+        
+        if (quantidade > 0) {
+            pedidos.push({
+                produtor: produtor,
+                produto: qtdInput.dataset.produto,
+                quantidade: quantidade
+            });
+        }
+    });
+    
+    if (pedidos.length === 0) {
+        mostrarMensagem('❌ Selecione pelo menos um produto e informe a quantidade', 'erro');
+        return;
     }
-    #pdf-cupom { 
-        position: absolute !important; 
-        left: 0 !important; 
-        top: 0 !important; 
-        width: 100% !important; 
+    
+    console.log('📤 Enviando pedidos:', pedidos);
+    
+    const btnSubmit = document.querySelector('.btn-submit');
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = '⏳ Enviando...';
+    
+    try {
+        // Envia cada pedido
+        for (const pedido of pedidos) {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(pedido)
+            });
+            
+            // Pequeno delay entre requisições
+            await new Promise(resolve => setTimeout(resolve, 300));
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+        mostrarMensagem(`✅ ${pedidos.length} pedido(s) registrado(s) com sucesso!`, 'sucesso');
+       // 1. Preenche os dados no cupom
+        montarCupomPDF(produtor, data, pedidos);
+        
+        const elemento = document.getElementById('pdf-cupom');
+        
+        // 2. DUPLICA O CONTEÚDO (Cria as duas vias)
+        // Guardamos o original, somamos ele mesmo com uma linha divisória
+        const viaOriginal = elemento.innerHTML;
+        elemento.innerHTML = viaOriginal + 
+            '<div style="border-top: 1px dashed #000; margin: 40px 0; padding-top: 40px;"></div>' + 
+            viaOriginal;
+
+        const nomeArquivo = `Pedido_CLAF_${produtor.replace(/\s+/g, '_')}_${data}.pdf`;
+
+        const opcoesPDF = {
+            margin: 10,
+            filename: nomeArquivo,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // 3. O PULO DO GATO: Pequeno atraso para garantir que não saia vazio
+        setTimeout(() => {
+            html2pdf().set(opcoesPDF).from(elemento).save().then(() => {
+                // Abre a impressão do navegador logo após salvar o arquivo
+                window.print();
+                
+                // Restaura o elemento para uma via só (para não acumular no próximo envio)
+                elemento.innerHTML = viaOriginal;
+                
+                // Reinicia a página para limpar tudo com segurança
+                setTimeout(() => { location.reload(); }, 1000);
+            });
+        }, 1000); // 1 segundo de espera é o ideal para dispositivos móveis
+    });
+});
+        gerarRecibo(produtor, data, pedidos);
+
+        // Limpa formulário
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.value = '';
+            input.disabled = true;
+        });
+        
+    } catch (erro) {
+        console.error('❌ Erro:', erro);
+        mostrarMensagem('❌ Erro ao registrar pedidos', 'erro');
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = '📦 Registrar Pedidos';
     }
 }
+function salvarEImprimirRecibo(produtor, data, pedidos) {
+    // Cria uma nova janela para impressão
+    const janela = window.open('', '_blank', 'width=400,height=600');
+
+    if (!janela) {
+        alert('⚠️ Pop-up bloqueado. Permita pop-ups para imprimir o recibo.');
+        return;
+    }
+
+    // Monta o conteúdo do recibo (estilo cupom)
+    let conteudo = `
+        <html>
+        <head>
+            <title>Recibo CLAF</title>
+            <style>
+                body {
+                    font-family: monospace;
+                    font-size: 12px;
+                    padding: 10px;
+                }
+                h2, h3 {
+                    text-align: center;
+                    margin: 4px 0;
+                }
+                .linha {
+                    border-top: 1px dashed #000;
+                    margin: 8px 0;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                td {
+                    padding: 2px 0;
+                }
+                .qtd {
+                    text-align: right;
+                }
+                .rodape {
+                    text-align: center;
+                    margin-top: 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <h2>COOPERATIVA CLAF</h2>
+            <h3>RECIBO DE ENTREGA</h3>
+
+            <div class="linha"></div>
+
+            <p><strong>Produtor:</strong> ${produtor}</p>
+            <p><strong>Data:</strong> ${data}</p>
+
+            <div class="linha"></div>
+
+            <table>
+    `;
+
+    pedidos.forEach(p => {
+        conteudo += `
+            <tr>
+                <td>${p.produto}</td>
+                <td class="qtd">${p.quantidade}</td>
+            </tr>
+        `;
+    });
+
+    const agora = new Date().toLocaleString('pt-BR');
+
+    conteudo += `
+            </table>
+
+            <div class="linha"></div>
+
+            <p class="rodape">Emitido em: ${agora}</p>
+            <p class="rodape">Cooperativa CLAF agradece!</p>
+
+            
+        </body>
+        </html>
+    `;
+
+    janela.document.open();
+    janela.document.write(conteudo);
+    janela.document.close();
+}
+function gerarReciboNaTela(produtor, data, pedidos) {
+    const recibo = document.getElementById('recibo');
+
+    let html = `
+        <h2>COOPERATIVA CLAF</h2>
+        <h3>RECIBO DE ENTREGA</h3>
+
+        <div class="linha"></div>
+
+        <p><strong>Produtor:</strong> ${produtor}</p>
+        <p><strong>Data:</strong> ${data}</p>
+
+        <div class="linha"></div>
+
+        <table>
+    `;
+
+    pedidos.forEach(p => {
+        html += `
+            <tr>
+                <td>${p.produto}</td>
+                <td class="qtd">${p.quantidade}</td>
+            </tr>
+        `;
+    });
+
+    const agora = new Date().toLocaleString('pt-BR');
+
+    html += `
+        </table>
+
+        <div class="linha"></div>
+
+        <p>Emitido em: ${agora}</p>
+        <p style="text-align:center;">Cooperativa CLAF agradece!</p>
+    `;
+
+    recibo.innerHTML = html;
+    recibo.style.display = 'block';
+
+    window.print();
+
+    window.onafterprint = () => {
+        recibo.style.display = 'none';
+        recibo.innerHTML = '';
+    };
+}
+function gerarRecibo(produtor, data, pedidos) {
+    document.getElementById('reciboProdutor').innerText = produtor;
+    document.getElementById('reciboData').innerText = data;
+
+    const itensDiv = document.getElementById('reciboItens');
+    itensDiv.innerHTML = '';
+
+    pedidos.forEach(p => {
+        const linha = document.createElement('p');
+        linha.innerHTML = `${p.produto} — <strong>${p.quantidade}</strong>`;
+        itensDiv.appendChild(linha);
+    });
+}
+window.onafterprint = function () {
+    // Fecha a visualização de impressão (se for aba nova)
+    if (window.opener) {
+        window.close();
+    } else {
+        // Caso esteja na mesma aba, reinicia o formulário
+        location.reload();
+    }
+};
+function montarCupomPDF(produtor, data, pedidos) {
+    document.getElementById('pdfProdutor').innerText = produtor;
+    document.getElementById('pdfData').innerText = data;
+    document.getElementById('pdfHora').innerText = new Date().toLocaleString('pt-BR');
+
+    const itensDiv = document.getElementById('pdfItens');
+    itensDiv.innerHTML = '';
+
+    pedidos.forEach(p => {
+        const linha = document.createElement('div');
+        linha.style.display = 'flex';
+        linha.style.justifyContent = 'space-between';
+        linha.style.fontSize = '12px';
+        linha.style.marginBottom = '2px';
+        linha.innerHTML = `<span>${p.produto}</span><span>${p.quantidade}</span>`;
+        itensDiv.appendChild(linha);
+    });
+}
+// Após salvar o PDF, permite imprimir manualmente e reiniciar
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        location.reload();
+    }
+});
